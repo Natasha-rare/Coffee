@@ -8,23 +8,35 @@ class MyWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
+        self.params = {'id': 'id', 'сорт': 'сорт', 'степень обжарки': 'степень обжарки',
+                       'форма': 'форма', 'вкус': 'вкус', 'цена': 'цена', 'объем упаковки': 'объем упаковки'}
         self.con = sqlite3.connect("coffee.db")
-        self.pushButton.clicked.connect(self.update_result)
         self.tableWidget.itemChanged.connect(self.item_changed)
-        self.pushButton_2.clicked.connect(self.save_results)
+        self.comboBox.addItems(list(self.params.keys()))
+        self.save.clicked.connect(self.save_results)
         self.modified = {}
+        self.load.clicked.connect(self.load_result)
         self.titles = None
+        self.tableWidget.setColumnCount(7)
+        head = []
+        for i in range(5):
+            head.append(self.con.cursor().execute("SELECT * FROM Coffee").description[i][0])
+        self.tableWidget.setHorizontalHeaderLabels(head)
 
-    def update_result(self):
+
+    def load_result(self):
+        print('s')
         cur = self.con.cursor()
         # Получили результат запроса, который ввели в текстовое поле
-        result = cur.execute("Select * from Coffee WHERE id=?",
-                             (self.spinBox.text(),)).fetchall()
+        req = "SELECT * FROM Coffee WHERE {} = {}".format(self.params.get(self.comboBox.currentText()),
+                                                         self.lineEdit.text())
+        if ("LIKE" in self.lineEdit.text() or "BETWEEN" in self.lineEdit.text() or "IN" in self.lineEdit.text() or
+                '<' in self.lineEdit.text() or '>' in self.lineEdit.text()):
+            req = f"SELECT * FROM Coffee WHERE {self.params.get(self.comboBox.currentText())} {self.lineEdit.text()}"
+        result = cur.execute(req).fetchall()
+
         # Заполнили размеры таблицы
         self.tableWidget.setRowCount(len(result))
-        self.tableWidget.setColumnCount(len(result[0]))
-        self.tableWidget.setHorizontalHeaderLabels(['id', 'сорт', 'степень обжарки',
-                                                'форма', 'вкус', 'цена', 'объем упаковки'])
         self.titles = [description[0] for description in cur.description]
         # Заполнили таблицу полученными элементами
         for i, elem in enumerate(result):
