@@ -19,22 +19,20 @@ class MyWidget(QMainWindow):
         self.titles = None
         self.tableWidget.setColumnCount(7)
         head = []
-        for i in range(5):
+        for i in range(7):
             head.append(self.con.cursor().execute("SELECT * FROM Coffee").description[i][0])
         self.tableWidget.setHorizontalHeaderLabels(head)
 
-
     def load_result(self):
-        print('s')
         cur = self.con.cursor()
         # Получили результат запроса, который ввели в текстовое поле
         req = "SELECT * FROM Coffee WHERE {} = {}".format(self.params.get(self.comboBox.currentText()),
                                                          self.lineEdit.text())
-        if ("LIKE" in self.lineEdit.text() or "BETWEEN" in self.lineEdit.text() or "IN" in self.lineEdit.text() or
+        if ("LIKE" in self.lineEdit.text().upper() or "BETWEEN" in self.lineEdit.text().upper() or
+                "IN" in self.lineEdit.text().upper() or
                 '<' in self.lineEdit.text() or '>' in self.lineEdit.text()):
             req = f"SELECT * FROM Coffee WHERE {self.params.get(self.comboBox.currentText())} {self.lineEdit.text()}"
         result = cur.execute(req).fetchall()
-
         # Заполнили размеры таблицы
         self.tableWidget.setRowCount(len(result))
         self.titles = [description[0] for description in cur.description]
@@ -55,8 +53,8 @@ class MyWidget(QMainWindow):
             que = "UPDATE Coffee SET\n"
             for key in self.modified.keys():
                 que += "{}='{}'\n".format(key, self.modified.get(key))
-            que += "WHERE id = ?"
-            cur.execute(que, (self.spinBox.text(),))
+            que += f"WHERE {self.params.get(self.comboBox.currentText())} = {self.lineEdit.text()}"
+            cur.execute(que)
             self.con.commit()
 
 
