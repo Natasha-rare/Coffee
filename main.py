@@ -50,7 +50,7 @@ class Changing(QWidget):
         self.add.clicked.connect(self.add_new)
         self.change_btn.clicked.connect(self.change)
         self.show()
-        self.con = sqlite3.connect("coffee.sqlite3")
+        self.con = sqlite3.connect("coffee.db")
         self.titles = None
 
     def change(self):
@@ -75,7 +75,6 @@ class Changing(QWidget):
         que = que[:-2]
         que += f"WHERE id = {int(self.id.text())}"
         cur.execute(que)
-        print('fff')
         self.con.commit()
 
     def add_new(self):
@@ -100,7 +99,6 @@ class Changing(QWidget):
             f"{int(self.price.text())},"\
             f"{int(self.volume.text())}"\
              ")"
-        print(que)
         cur.execute(que)
         self.con.commit()
 
